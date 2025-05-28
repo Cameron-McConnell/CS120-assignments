@@ -1,0 +1,294 @@
+
+TURN-BASED COMBAT (TBC) SYSTEM
+Module: tbc
+
+1. CHARACTER CLASS
+Purpose: Represents combatants with stats and actions.
+
+1.1 Properties
+Private Attributes:
+      _name, _hitPoints, _hitChance, _maxDamage, _armor
+
+Property Getters/Setters with Validation:
+
+      name
+
+      Type: String
+
+      Default: "Unknown"
+
+      Validation: Accepts any string value.
+
+      hitPoints
+
+      Type: Integer (positive/negative/zero)
+
+      Default: 1
+
+      Validation: Allows all integers.
+
+      hitChance
+
+      Type: Integer (0-100)
+
+      Default: 50
+
+      Validation: Clamps to nearest valid value (0 or 100 if out of bounds).
+
+      maxDamage
+
+      Type: Positive integer
+
+      Default: 1
+
+      Validation: Minimum value = 1.
+
+      armor
+
+      Type: Non-negative integer
+
+      Default: 0
+
+      Validation: Minimum value = 0.
+
+1.2 Methods
+__init__(name, hitPoints, hitChance, maxDamage, armor)
+
+      Parameters: Default values provided for all.
+
+      Action: Initializes properties using setters.
+
+printStats()
+
+      Output: Prints formatted stats:
+      ==================
+      NAME: [name]
+      ------------------
+      Hit Points: [hitPoints]
+      Hit Chance: [hitChance]%
+      Max Damage: [maxDamage]
+      Armor:      [armor]
+      ==================
+attack(target)
+
+      Parameters: target (another Character object).
+
+      Logic:
+
+      Roll random number (1-100).
+
+      If roll ? hitChance:
+
+      Calculate damage: RANDOM(1, maxDamage) - target.armor (min 0).
+
+      Reduce target.hitPoints by damage.
+
+      Return success messages.
+
+      Else: Return miss message.
+
+      Returns: List of combat messages (e.g., ["Hero hits Monster!", "Damage: 3"]).
+
+2. HELPER FUNCTIONS
+      validateInteger(value, min, max, default)
+      Purpose: Validates and clamps integer inputs.
+
+      Logic:
+
+      If value is not an integer ? return default.
+
+      If value < min ? clamp to min.
+
+      If value > max ? clamp to max.
+
+      Returns: Validated integer.
+
+3. COMBAT FUNCTIONS
+      startBattle(character1, character2)
+      Purpose: Manages turn-based combat until one character is defeated.
+
+      Flow:
+
+      Print initial stats for both characters.
+
+      Loop while both have HP > 0:
+
+      Character 1's Turn:
+
+      Call character1.attack(character2).
+
+      Print attack results.
+
+      Check if character2 is defeated ? end battle.
+
+      Character 2's Turn:
+
+      Call character2.attack(character1).
+
+      Print attack results.
+
+      Check if character1 is defeated ? end battle.
+
+Print current HP.
+
+      Pause for user input (Press ENTER to continue...).
+
+Declare winner (character with HP > 0).
+
+4. DEMO/TEST FUNCTION
+      demo()
+      Purpose: Example usage of the module.
+
+      Steps:
+
+      Create hero:
+      hero = Character()
+      hero.name = "Hero"
+      hero.hitPoints = 10
+      hero.hitChance = 50
+      hero.maxDamage = 5
+      hero.armor = 2
+      Create monster (using constructor):
+
+      monster = Character("Monster", 20, 30, 5, 0)
+      Start battle: startBattle(hero, monster).
+
+5. MODULE ENTRY POINT
+IF __name__ == "__main__":
+    demo()
+
+
+
+
+
+
+
+
+
+
+# TURN-BASED COMBAT (TBC) SYSTEM 
+
+MODULE tbc
+
+    # CHARACTER CLASS   
+ 
+    CLASS Character:
+
+                # CONSTRUCTOR
+
+        CONSTRUCTOR(name="Unknown", hitPoints=1, hitChance=50, maxDamage=1, armor=0):
+            SET self.name = name
+            SET self.hitPoints = hitPoints
+            SET self.hitChance = hitChance
+            SET self.maxDamage = maxDamage
+            SET self.armor = armor
+        END CONSTRUCTOR
+        
+        # PROPERTIES WITH VALIDATION
+        
+        # Name Property
+        PROPERTY name:
+            GET:
+                RETURN self._name
+            SET(value):
+                IF value IS STRING AND value IS NOT EMPTY:
+                    SET self._name = value
+                ELSE:
+                    SET self._name = "Unknown"
+                    PRINT "Warning: Name must be a non-empty string. Using 'Unknown'"
+                END IF
+            END SET
+        END PROPERTY
+        
+        # Hit Points Property
+        PROPERTY hitPoints:
+            GET:
+                RETURN self._hitPoints
+            SET(value):
+                SET self._hitPoints = VALIDATE_INTEGER(value, default=1)
+            END SET
+        END PROPERTY
+        
+        # Hit Chance Property
+        PROPERTY hitChance:
+            GET:
+                RETURN self._hitChance
+            SET(value):
+                SET self._hitChance = VALIDATE_INTEGER(value, min=0, max=100, default=50)
+            END SET
+        END PROPERTY
+        
+        # Max Damage Property
+        PROPERTY maxDamage:
+            GET:
+                RETURN self._maxDamage
+            SET(value):
+                SET self._maxDamage = VALIDATE_INTEGER(value, min=1, default=1)
+            END SET
+        END PROPERTY
+        
+        # Armor Property
+        PROPERTY armor:
+            GET:
+                RETURN self._armor
+            SET(value):
+                SET self._armor = VALIDATE_INTEGER(value, min=0, default=0)
+            END SET
+        END PROPERTY
+        
+        # METHODS
+        
+        # Display Character Stats
+        METHOD printStats():
+            PRINT " "
+            PRINT "CHARACTER STATISTICS:"
+            PRINT " "
+            PRINT "Name:       " + self.name
+            PRINT "Hit Points: " + self.hitPoints
+            PRINT "Hit Chance: " + self.hitChance + "%"
+            PRINT "Max Damage: " + self.maxDamage
+            PRINT "Armor:      " + self.armor
+            PRINT “ "
+        END METHOD
+        
+        # Attack Another Character
+        METHOD attack(targetCharacter):
+            CREATE empty messageList
+            
+            # Roll for hit (1-100)
+            SET attackRoll = RANDOM_NUMBER(1, 100)
+            
+            IF attackRoll <= self.hitChance:
+                # Successful hit
+                SET baseDamage = RANDOM_NUMBER(1, self.maxDamage)
+                SET netDamage = MAXIMUM(0, baseDamage - targetCharacter.armor)
+                SET targetCharacter.hitPoints = targetCharacter.hitPoints - netDamage
+                
+                # Add success messages
+                ADD self.name + " successfully hits " + targetCharacter.name + "!" TO messageList
+                ADD "Base Damage:    " + baseDamage TO messageList
+                ADD "Armor Blocked:  " + targetCharacter.armor TO messageList
+                ADD "Net Damage:     " + netDamage TO messageList
+            ELSE:
+                # Missed attack
+                ADD self.name + " missed " + targetCharacter.name + "!" TO messageList
+            END IF
+            
+            RETURN messageList
+        END METHOD
+        
+    END CLASS
+
+    # HELPER FUNCTIONS
+    
+    # Validate Integer Inputs
+    FUNCTION VALIDATE_INTEGER(inputValue, min=-INFINITY, max=INFINITY, default=0):
+        TRY:
+            SET numericValue = INTEGER(inputValue)
+            
+            IF numericValue < min:
+                PRINT "Warning: Value " + numericValue + " is below minimum " + min
+                RETURN min
+            ELSE IF numericValue > max:
+                PRINT "Warning: Value " + numericValue + " is above maximum " + max
+                RETURN max
