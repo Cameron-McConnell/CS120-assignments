@@ -143,8 +143,6 @@ class Instructions(simpleGE.Scene):
             "to move your spaceship and catch falling stars.",
             "Each star you catch earns you a point.",
             "",
-            "Try to collect as many as possible before time runs out!",
-            "",
             "Good luck!"]
         
         self.directions.center = (320, 200)
